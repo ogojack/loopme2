@@ -7,7 +7,13 @@ var LoopMeApp = (window.LoopMeApp = window.LoopMeApp || {});
     likeBtn = document.getElementById("likeBtn"),
     dislikeBtn = document.getElementById("dislikeBtn"),
     shareBtn = document.getElementById("shareBtn"),
+    closeBtn = document.getElementById("closeBtn"),
     actions = [];
+
+  function track(action) {
+    actions.push(action);
+    LoopMeApp.Cookies.set("actions", JSON.stringify(actions));
+  }
 
   LoopMeApp.AJAX.get(function(data) {
     appData = data;
@@ -19,32 +25,65 @@ var LoopMeApp = (window.LoopMeApp = window.LoopMeApp || {});
 
     LoopMeApp.View.addEvent(likeBtn, "click", function () {
       
-      actions.push("ad_like");
-      LoopMeApp.Cookies.set("actions", JSON.stringify(actions));
+      track("ad_like");
       LoopMeApp.AJAX.notifyServer(appData["ads"][0]["beacons"]["ad_like"]);
     });
 
 
     LoopMeApp.View.addEvent(dislikeBtn, "click", function () {
       
-      actions.push("ad_hide");
-      LoopMeApp.Cookies.set("actions", JSON.stringify(actions));
+      track("ad_hide");
       LoopMeApp.AJAX.notifyServer(appData["ads"][0]["beacons"]["ad_hide"]);
     });
 
 
     LoopMeApp.View.addEvent(shareBtn, "click", function () {
 
-      actions.push("ad_share");
-      LoopMeApp.Cookies.set("actions", JSON.stringify(actions));
+      track("ad_share");
       LoopMeApp.AJAX.notifyServer(appData["ads"][0]["beacons"]["ad_share"]);
     });
 
-    LoopMeApp.View.addEvent(window, "deviceorientation", function () {
-      //TODO track cookies
-      console.log(arguments);
+    LoopMeApp.View.addEvent(closeBtn, "click", function () {
+
+      track("ad_close");
+      LoopMeApp.AJAX.notifyServer(appData["session"]["beacons"]["ad_close"]);
+      document.getElementById("adv").innerHTML = "";
     });
-    
+
+    LoopMeApp.View.addEvent(window, "deviceorientation", function () {
+      
+      checkOrientation();
+
+    });
+
+    function checkOrientation() {
+      var currMode = "";
+
+      switch (window.orientation) {
+
+        case 0:
+          currMode = "portrait";
+          break;
+
+        case -90:
+          currMode = "landscape";
+          break;
+
+        case 90:
+          currMode = "landscape";
+          break;
+
+        case 180:
+          currMode = "portrait";
+          break;
+
+        default:
+          currMode = "portrait";
+          break;
+      }
+      //currMode = "landscape";
+      document.getElementsByTagName("body")[0].setAttribute("class", currMode);
+    }
   });
 
 })();
